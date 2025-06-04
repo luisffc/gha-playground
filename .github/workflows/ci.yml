@@ -8,10 +8,10 @@ on:
 
 jobs:
   build:
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v3
-    - name: Print env
-      run: env
-    - name: info
-      run: ls -al && pwd
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Print env
+        run: env
+      - name: info
+        run: ls -al && pwd
