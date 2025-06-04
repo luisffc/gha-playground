@@ -11,7 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Print env
-        run: env
-      - name: info
-        run: ls -al && pwd
+      - name: Build docker image
+        run: |
+          docker build -t my-image .
+      - name: Push image to GitHub Container Registry
+        uses: docker/build-push-action@v2
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          tags: latest
