@@ -11,13 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Build docker image
-        run: |
-          docker build -t my-image .
-      - name: Push image to GitHub Container Registry
+      - name: Build and Push Docker image
         uses: docker/build-push-action@v2
         with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.MY_GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          tags: latest
+          context: .
+          dockerfile: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+          output: type=image,name=target,annotation-index.org.opencontainers.image.description=My multi-arch image
