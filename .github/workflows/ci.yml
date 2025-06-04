@@ -17,5 +17,5 @@ jobs:
           context: .
           dockerfile: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ github.organization }}/${{ github.repository }}:latest
+          tags: ghcr.io${{ github.organization }}/${{ github.repository }}:latest
           output: type=image,name=target,annotation-index.org.opencontainers.image.description=My multi-arch image
