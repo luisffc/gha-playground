@@ -55,9 +55,6 @@ jobs:
               issue_number: context.payload.pull_request.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `🧪 **Terraform Plan Result:**\n\`\`\`hcl\n${truncated}\n\`\`\``
+              body: `🧪 **Terraform Plan Result:**\n<details><summary>Click to expand</summary>\n\n\`\`\`hcl\n${truncated}\n\`\`\`\n</details>`
             });
 
-      # Skipped for now
-      # - name: Terraform Apply
-      #   run: terraform -chdir=terraform apply -auto-approve
