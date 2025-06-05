@@ -1,6 +1,14 @@
 data "aws_ami" "amazon_linux" {
   most_recent = true
   owners      = ["amazon"]
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
 }
 
 resource "aws_launch_template" "ecs_lt" {
@@ -11,7 +19,7 @@ resource "aws_launch_template" "ecs_lt" {
   key_name               = "personal-account"
   vpc_security_group_ids = [aws_security_group.security_group.id]
   iam_instance_profile {
-    name = "ecsInstanceRole"
+    name = aws_iam_instance_profile.ecs_instance_profile.name
   }
 
   block_device_mappings {
@@ -29,12 +37,16 @@ resource "aws_launch_template" "ecs_lt" {
     }
   }
 
+  lifecycle {
+    ignore_changes = [image_id]
+  }
+
   user_data = filebase64("${path.module}/ecs.sh")
 }
 
 resource "aws_autoscaling_group" "ecs_asg" {
   vpc_zone_identifier = [aws_subnet.subnet.id, aws_subnet.subnet2.id]
-  desired_capacity    = 2
+  desired_capacity    = 3
   max_size            = 3
   min_size            = 1
 
