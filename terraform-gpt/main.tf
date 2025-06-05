@@ -11,27 +11,6 @@ resource "aws_ecs_cluster" "this" {
   name = "getting-started-cluster"
 }
 
-resource "aws_iam_role" "ecs_task_execution" {
-  name = "ecsTaskExecutionRole"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Action = "sts:AssumeRole",
-      Principal = {
-        Service = "ecs-tasks.amazonaws.com"
-      },
-      Effect = "Allow",
-      Sid    = ""
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_execution_policy" {
-  role       = aws_iam_role.ecs_task_execution.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
-
 resource "aws_cloudwatch_log_group" "ecs" {
   name              = "/ecs/getting-started"
   retention_in_days = 7
@@ -69,7 +48,7 @@ resource "aws_ecs_service" "this" {
   name            = "getting-started-service"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.getting_started.arn
-  desired_count   = 1
+  desired_count   = 2
   launch_type     = "FARGATE"
 
   network_configuration {
