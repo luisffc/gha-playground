@@ -2,6 +2,11 @@ provider "aws" {
   region = var.aws_region
 }
 
+module "vpc" {
+  source = "./modules/vpc"
+  name   = "ecs"
+}
+
 resource "aws_ecs_cluster" "this" {
   name = "getting-started-cluster"
 }
@@ -68,7 +73,7 @@ resource "aws_ecs_service" "this" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = var.private_subnets
+    subnets          = module.vpc.private_subnets
     security_groups  = [aws_security_group.ecs_task.id]
     assign_public_ip = false
   }
@@ -85,7 +90,7 @@ resource "aws_ecs_service" "this" {
 resource "aws_security_group" "ecs_task" {
   name        = "ecs-task-sg"
   description = "Allow HTTP"
-  vpc_id      = var.vpc_id
+  vpc_id      = module.vpc.vpc_id
 
   ingress {
     from_port   = 80

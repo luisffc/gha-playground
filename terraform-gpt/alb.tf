@@ -3,13 +3,13 @@ resource "aws_lb" "ecs" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
-  subnets            = var.public_subnets
+  subnets            = module.vpc.public_subnets
 }
 
 resource "aws_security_group" "alb" {
   name        = "alb-sg"
   description = "Allow HTTP from internet"
-  vpc_id      = var.vpc_id
+  vpc_id      = module.vpc.vpc_id
 
   ingress {
     from_port   = 80
@@ -31,7 +31,7 @@ resource "aws_lb_target_group" "ecs" {
   port        = 80
   protocol    = "HTTP"
   target_type = "ip"
-  vpc_id      = var.vpc_id
+  vpc_id      = module.vpc.vpc_id
 
   health_check {
     path                = "/"
