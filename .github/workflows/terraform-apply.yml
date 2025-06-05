@@ -1,0 +1,79 @@
+name: Terraform Apply
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [labeled]
+
+jobs:
+  apply:
+    name: Terraform Apply
+    if: |
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' && github.event.label.name == 'approved')
+
+    runs-on: ubuntu-latest
+
+    env:
+      TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.12.1
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Terraform Init
+        run: terraform -chdir=terraform init
+
+      - name: Terraform Show (Before Apply)
+        run: terraform -chdir=terraform show -no-color > before.txt || true
+
+      - name: Comment - State Before Apply
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('before.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.payload.pull_request.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `📦 **Terraform State Before Apply**\n<details><summary>Click to expand</summary>\n\n\`\`\`hcl\n${body.slice(0, 65000)}\n\`\`\`\n</details>`
+            });
+
+      - name: Terraform Apply
+        run: terraform -chdir=terraform apply -auto-approve
+
+      - name: Terraform Show (After Apply)
+        run: terraform -chdir=terraform show -no-color > after.txt
+
+      - name: Comment - State After Apply
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('after.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.payload.pull_request.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `✅ **Terraform State After Apply**\n<details><summary>Click to expand</summary>\n\n\`\`\`hcl\n${body.slice(0, 65000)}\n\`\`\`\n</details>`
+            });
