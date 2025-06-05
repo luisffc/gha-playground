@@ -39,12 +39,7 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Terraform Init
-        run: terraform -chdir=terraform init \
-          -backend-config="bucket=$TF_BUCKET" \
-          -backend-config="key=ecs-getting-started/terraform.tfstate" \
-          -backend-config="region=$AWS_REGION" \
-          -backend-config="dynamodb_table=$TF_LOCK_TABLE" \
-          -backend-config="encrypt=true"
+        run: terraform -chdir=terraform init
 
       - name: Terraform Show (Before Apply)
         run: terraform -chdir=terraform show -no-color > before.txt || true
@@ -60,7 +55,7 @@ jobs:
               issue_number: context.payload.pull_request.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `📦 **Terraform State Before Apply**\n\`\`\`hcl\n${body.slice(0, 65000)}\n\`\`\``
+              body: `📦 **Terraform State Before Apply**\n<details><summary>Click to expand</summary>\n\n\`\`\`hcl\n${body.slice(0, 65000)}\n\`\`\`\n</details>`
             });
 
       - name: Terraform Apply
@@ -80,5 +75,5 @@ jobs:
               issue_number: context.payload.pull_request.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `✅ **Terraform State After Apply**\n\`\`\`hcl\n${body.slice(0, 65000)}\n\`\`\``
+              body: `✅ **Terraform State After Apply**\n<details><summary>Click to expand</summary>\n\n\`\`\`hcl\n${body.slice(0, 65000)}\n\`\`\`\n</details>`
             });
